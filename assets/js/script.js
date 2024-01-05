@@ -7,11 +7,32 @@ $(function () {
   var timeBlocks = $('.time-block');
   var saveBtns = $(".saveBtn");
 
-  var date = moment().format('LL');
-  var time = moment().format("LT");
-  var globalHour = dayjs().hour();
-  var shiftValue = 8;
-  dateTimeEL.text(time + " : " + date);
+  const monthsOfYear = {
+    0 : "January",
+    1 : "February",
+    2 : "March",
+    3 : "April",
+    4 : "May",
+    5 : "June",
+    6 : "July",
+    7 : "August",
+    8 : "September",
+    9 : "October",
+    10 : "November",
+    11 : "December",
+  };
+
+  var currentSecond = dayjs().second();
+  var currentMinute = dayjs().minute();
+  var currentHour = dayjs().hour();
+  var timeState = "AM";
+
+  var currentDay= dayjs().day();
+  var currentMonth = dayjs().month();
+  var currentYear = dayjs().year();
+
+  var dayJSdate = monthsOfYear[currentMonth] + " " + currentDay + ", " + currentYear;
+  var dayJStime = currentHour + ":" + currentMinute + ":" + currentSecond + " " + timeState;
   
   // TODO: Add a listener for click events on the save button. This code should
   // use the id in the containing time-block as a key to save the user input in
@@ -25,37 +46,28 @@ $(function () {
     SaveToLocalStorage(btn);
   });
 
-  const PopulateFromLocalStorage = () => {
-    console.log(timeBlocks.length);
-    for(let i = 0; i < timeBlocks.length; i++) {
-      var keyName = $(timeBlocks[i]).attr('id');
-      $(timeBlocks[i]).children('textarea').text(localStorage.getItem(keyName));
-    }
-  }
+  
   
   // TODO: Add code to apply the past, present, or future class to each time
   // block by comparing the id to the current hour. HINTS: How can the id
   // attribute of each time-block be used to conditionally add or remove the
   // past, present, and future classes? How can Day.js be used to get the
   // current hour in 24-hour time?
-  const CheckTime = () => {
-    //get first integer in time and then if it is 1 add the second integer for cases 10-12
-    //1 is excluded since 1 AM is not on the schedule
-    var timeCompare = time[0];
-    if(timeCompare == 1) { timeCompare += time[1]; }
-    
+  const CheckTime = () => {    
     for(let i = 0; i < timeBlocks.length; i++) {
       var idCheck = $(timeBlocks[i]).attr('id');
+      idCheck = idCheck.split("-");
 
       //check to make sure current time > id time
       //swap block class to handle color
       //use +8 to shift to starting value 8am
-      if(timeCompare > i + shiftValue) {
+
+      if(currentHour > idCheck[1]) {
         //Clear other two classes just in case to prevent bugs
         $(timeBlocks[i]).removeClass('future');
         $(timeBlocks[i]).removeClass('present');
         $(timeBlocks[i]).addClass('past');
-      } else if (timeCompare == i + shiftValue) {
+      } else if(currentHour == idCheck[1]) {
         $(timeBlocks[i]).removeClass('past');
         $(timeBlocks[i]).removeClass('future');
         $(timeBlocks[i]).addClass('present');
@@ -65,7 +77,7 @@ $(function () {
         $(timeBlocks[i]).addClass('future');
       }
     }
-  }
+  };
 
   // TODO: Add code to get any user input that was saved in localStorage and set
   // the values of the corresponding textarea elements. HINT: How can the id
@@ -78,12 +90,36 @@ $(function () {
     localStorage.setItem(keyName, textArea.val());
   };
 
+  const PopulateFromLocalStorage = () => {
+    for(let i = 0; i < timeBlocks.length; i++) {
+      var keyName = $(timeBlocks[i]).attr('id');
+      $(timeBlocks[i]).children('textarea').text(localStorage.getItem(keyName));
+    }
+  };
+
+  const FormatDateTime = () => {
+    if(currentHour > 12) {
+      timeState = "PM";
+      dayJStime = (currentHour - 12) + ":" + currentMinute + ":" + currentSecond + " " + timeState;
+    } else {
+      timeState = "AM";
+      dayJStime = currentHour + ":" + currentMinute + ":" + currentSecond + " " + timeState;
+    }
+    dateTimeEL.text(dayJStime + " : " + dayJSdate);
+  };
+
   // TODO: Add code to display the current date in the header of the page.
   setInterval(function() {
-    var time = moment().format("LTS");
-    dateTimeEL.text(time + " : " + date);
-    
-    //CheckTime();
+    currentSecond = dayjs().second();
+    if(currentHour > 12) {
+      timeState = "PM";
+      dayJStime = (currentHour - 12) + ":" + currentMinute + ":" + currentSecond + " " + timeState;
+    } else {
+      timeState = "AM";
+      dayJStime = currentHour + ":" + currentMinute + ":" + currentSecond + " " + timeState;
+    }
+
+    dateTimeEL.text(dayJStime + " : " + dayJSdate);
   }, 1000);
 
   setInterval(function() {
@@ -92,5 +128,6 @@ $(function () {
   }, 60000);
 
   PopulateFromLocalStorage();
+  FormatDateTime();
   CheckTime();
 });
