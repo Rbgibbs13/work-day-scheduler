@@ -3,7 +3,6 @@
 // in the html.
 $(function () {
   var dateTimeEL = $("#currentDay");
-  var containerEl = $('.custom-container');
   var timeBlocks = $('.time-block');
   var saveBtns = $(".saveBtn");
 
@@ -56,10 +55,7 @@ $(function () {
       var idCheck = $(timeBlocks[i]).attr('id');
       idCheck = idCheck.split("-");
 
-      //check to make sure current time > id time
       //swap block class to handle color
-      //use +8 to shift to starting value 8am
-
       if(currentHour > idCheck[1]) {
         //Clear other two classes just in case to prevent bugs
         $(timeBlocks[i]).removeClass('future');
